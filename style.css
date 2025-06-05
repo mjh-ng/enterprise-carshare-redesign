@@ -34,6 +34,29 @@ h1 {
   margin-bottom: 0.5em;
 }
 
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: var(--spacing);
+}
+
+.profile-box {
+  background: white;
+  border: 1px solid var(--gray);
+  border-radius: var(--radius);
+  padding: 0.25rem 0.75rem;
+  cursor: pointer;
+}
+
+.main-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: var(--spacing);
+}
+
 .calendar-header {
   display: flex;
   justify-content: space-between;
@@ -92,6 +115,38 @@ h1 {
   background: #ddd;
   border-radius: var(--radius);
   margin: var(--spacing) 0;
+}
+
+.timeline-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--blue);
+  border-radius: var(--radius);
+}
+
+.timeline-labels-top,
+.timeline-labels-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  font-size: 0.75rem;
+  pointer-events: none;
+}
+
+.timeline-labels-top {
+  top: -1.5em;
+}
+
+.timeline-labels-bottom {
+  bottom: -1.5em;
+}
+
+.label-top,
+.label-bottom {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
 }
 
 .timeline .segment {
