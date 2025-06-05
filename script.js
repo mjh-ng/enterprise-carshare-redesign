@@ -112,6 +112,173 @@ function renderMonthCalendar(year, month) {
   document.getElementById("prevMonth").disabled = (month <= today.getMonth() && year === today.getFullYear());
 }
 
+function renderCars() {
+  const list = document.getElementById("carList");
+  if (!list) return;
+  list.innerHTML = "";
+
+  mockCars.forEach((car) => {
+    const card = document.createElement("div");
+    card.classList.add("car-card");
+
+    const title = document.createElement("h3");
+    title.textContent = car.name;
+    card.appendChild(title);
+
+    const date = document.createElement("p");
+    date.textContent = formatDateDisplay(car.date);
+    card.appendChild(date);
+
+    const timeline = document.createElement("div");
+    timeline.classList.add("timeline");
+    timeline.style.position = "relative";
+
+    const available = document.createElement("div");
+    available.classList.add("segment", "available");
+    available.style.left = `${(car.start / 96) * 100}%`;
+    available.style.width = `${((car.end - car.start) / 96) * 100}%`;
+    timeline.appendChild(available);
+
+    if (selectedDates.includes(car.date)) {
+      const userStart = selectedTime.start * 4;
+      const userEnd = selectedTime.end * 4;
+      const overlay = document.createElement("div");
+      overlay.classList.add("overlay");
+      overlay.style.left = `${(userStart / 96) * 100}%`;
+      overlay.style.width = `${((userEnd - userStart) / 96) * 100}%`;
+      const fullMatch = userStart >= car.start && userEnd <= car.end;
+      overlay.style.background = fullMatch ? "var(--green)" : "var(--red)";
+      card.classList.add(fullMatch ? "full" : "partial");
+      timeline.appendChild(overlay);
+    }
+
+    card.appendChild(timeline);
+
+    const details = document.createElement("div");
+    details.style.display = "none";
+    const interactive = document.createElement("div");
+    interactive.classList.add("timeline");
+    interactive.style.position = "relative";
+    const reserve = document.createElement("button");
+    reserve.textContent = "Reserve";
+    reserve.disabled = true;
+    details.appendChild(interactive);
+    details.appendChild(reserve);
+    card.appendChild(details);
+
+    function updateOverlay() {
+      interactive.innerHTML = "";
+      const avail = document.createElement("div");
+      avail.classList.add("segment", "available");
+      avail.style.left = `${(car.start / 96) * 100}%`;
+      avail.style.width = `${((car.end - car.start) / 96) * 100}%`;
+      interactive.appendChild(avail);
+
+      const overlay = document.createElement("div");
+      overlay.classList.add("overlay");
+      overlay.style.left = `${(selectedTime.start * 4 / 96) * 100}%`;
+      overlay.style.width = `${((selectedTime.end - selectedTime.start) * 4 / 96) * 100}%`;
+      const match = selectedTime.start * 4 >= car.start && selectedTime.end * 4 <= car.end;
+      overlay.style.background = match ? "var(--green)" : "var(--red)";
+      reserve.disabled = !match;
+
+      const leftHandle = document.createElement("div");
+      const rightHandle = document.createElement("div");
+      [leftHandle, rightHandle].forEach(h => {
+        h.style.width = "8px";
+        h.style.height = "100%";
+        h.style.background = "#000";
+        h.style.position = "absolute";
+        h.style.top = 0;
+        h.style.cursor = "ew-resize";
+      });
+      leftHandle.style.left = 0;
+      rightHandle.style.right = 0;
+      overlay.appendChild(leftHandle);
+      overlay.appendChild(rightHandle);
+      interactive.appendChild(overlay);
+
+      let drag = false;
+      let resize = false;
+      let side = null;
+      let startX = 0;
+      let initialLeft = 0;
+      let initialWidth = 0;
+
+      overlay.addEventListener("mousedown", e => {
+        if (e.target === leftHandle || e.target === rightHandle) {
+          resize = true;
+          side = e.target === leftHandle ? "left" : "right";
+        } else {
+          drag = true;
+        }
+        startX = e.clientX;
+        initialLeft = overlay.offsetLeft;
+        initialWidth = overlay.offsetWidth;
+        e.preventDefault();
+      });
+
+      window.addEventListener("mousemove", move);
+      window.addEventListener("mouseup", end);
+
+      function move(e) {
+        if (!drag && !resize) return;
+        const width = interactive.offsetWidth;
+        const step = width / 96;
+        if (drag) {
+          let newLeft = initialLeft + (e.clientX - startX);
+          newLeft = Math.max(0, Math.min(newLeft, width - overlay.offsetWidth));
+          newLeft = Math.round(newLeft / step) * step;
+          overlay.style.left = `${newLeft}px`;
+          selectedTime.start = Math.round(newLeft / step) / 4;
+          selectedTime.end = selectedTime.start + initialWidth / step / 4;
+        } else if (resize) {
+          if (side === "left") {
+            let newLeft = initialLeft + (e.clientX - startX);
+            let newWidth = initialWidth - (e.clientX - startX);
+            if (newLeft >= 0 && newWidth >= step) {
+              newLeft = Math.round(newLeft / step) * step;
+              newWidth = Math.round(newWidth / step) * step;
+              overlay.style.left = `${newLeft}px`;
+              overlay.style.width = `${newWidth}px`;
+              selectedTime.start = Math.round(newLeft / step) / 4;
+              selectedTime.end = Math.round((newLeft + newWidth) / step) / 4;
+            }
+          } else {
+            let newWidth = initialWidth + (e.clientX - startX);
+            if (initialLeft + newWidth <= width && newWidth >= step) {
+              newWidth = Math.round(newWidth / step) * step;
+              overlay.style.width = `${newWidth}px`;
+              selectedTime.end = Math.round((initialLeft + newWidth) / step) / 4;
+            }
+          }
+        }
+        const good = selectedTime.start * 4 >= car.start && selectedTime.end * 4 <= car.end;
+        overlay.style.background = good ? "var(--green)" : "var(--red)";
+        reserve.disabled = !good;
+      }
+
+      function end() {
+        drag = false;
+        resize = false;
+      }
+    }
+
+    updateOverlay();
+
+    card.addEventListener("click", () => {
+      if (details.style.display === "none") {
+        details.style.display = "block";
+        updateOverlay();
+      } else {
+        details.style.display = "none";
+      }
+    });
+
+    list.appendChild(card);
+  });
+}
+
 function rerenderAll() {
   renderMonthCalendar(currentYear, currentMonth);
   renderRangeLabel();
