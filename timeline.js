@@ -7,7 +7,7 @@ export function renderMasterTimeline(selectedDates, selectedTime, rerenderAll) {
     const totalQuarters = selectedDates.length === 1 ? 96 : 24 * selectedDates.length;
     const block = document.createElement("div");
     block.classList.add("timeline-bar");
-  
+
     const startQ = selectedTime.start * (selectedDates.length === 1 ? 4 : 1);
     const endQ = selectedTime.end * (selectedDates.length === 1 ? 4 : 1);
     block.style.left = `${(startQ / totalQuarters) * 100}%`;
@@ -19,16 +19,8 @@ export function renderMasterTimeline(selectedDates, selectedTime, rerenderAll) {
   
     const leftHandle = document.createElement("div");
     const rightHandle = document.createElement("div");
-    [leftHandle, rightHandle].forEach(handle => {
-      handle.style.width = "8px";
-      handle.style.height = "100%";
-      handle.style.background = "#000";
-      handle.style.position = "absolute";
-      handle.style.top = 0;
-      handle.style.cursor = "ew-resize";
-    });
-    leftHandle.style.left = 0;
-    rightHandle.style.right = 0;
+    leftHandle.classList.add("handle", "left");
+    rightHandle.classList.add("handle", "right");
   
     block.appendChild(leftHandle);
     block.appendChild(rightHandle);
@@ -37,24 +29,27 @@ export function renderMasterTimeline(selectedDates, selectedTime, rerenderAll) {
     // Labels ABOVE the bar
     const topLabelBar = document.createElement("div");
     topLabelBar.classList.add("timeline-labels-top");
-    for (let i = 0; i < totalQuarters + 1; i++) {
-      if (selectedDates.length === 1 && (i % 48 === 0 || i === 0 || i === 96)) {
+    if (selectedDates.length === 1) {
+      for (let h = 0; h <= 24; h += 6) {
+        const q = h * 4;
         const label = document.createElement("div");
         label.classList.add("label-top");
-        label.style.left = `${(i / totalQuarters) * 100}%`;
-        label.textContent = i === 0 ? "12am" : i === 48 ? "Noon" : "12am";
+        label.style.left = `${(q / totalQuarters) * 100}%`;
+        if (h === 0 || h === 24) label.textContent = "12am";
+        else if (h === 12) label.textContent = "Noon";
+        else label.textContent = `${h % 12}${h < 12 ? 'am' : 'pm'}`;
         topLabelBar.appendChild(label);
-      } else if (selectedDates.length > 1 && i % 24 === 0) {
-        const dateIdx = Math.floor(i / 24);
-        if (selectedDates[dateIdx]) {
-          const label = document.createElement("div");
-          label.classList.add("label-top");
-          label.style.left = `${(i / totalQuarters) * 100}%`;
-          const d = new Date(selectedDates[dateIdx]);
-          label.textContent = `${d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`;
-          topLabelBar.appendChild(label);
-        }
       }
+    } else {
+      selectedDates.forEach((d, idx) => {
+        const q = idx * 24;
+        const label = document.createElement("div");
+        label.classList.add("label-top");
+        label.style.left = `${(q / totalQuarters) * 100}%`;
+        const dateObj = new Date(d);
+        label.textContent = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        topLabelBar.appendChild(label);
+      });
     }
     container.appendChild(topLabelBar);
   
@@ -103,7 +98,7 @@ export function renderMasterTimeline(selectedDates, selectedTime, rerenderAll) {
       const parentWidth = container.offsetWidth;
       const dx = e.clientX - dragStartX;
   
-      const increment = selectedDates.length === 1 ? parentWidth / 96 : parentWidth / (24 * selectedDates.length);
+      const increment = parentWidth / totalQuarters;
       if (isDragging) {
         let newLeft = initialLeft + dx;
         newLeft = Math.max(0, Math.min(newLeft, parentWidth - block.offsetWidth));
@@ -147,8 +142,8 @@ export function renderMasterTimeline(selectedDates, selectedTime, rerenderAll) {
     });
   }
   
-  function formatHour(block, isSingleDay) {
-    const adjusted = isSingleDay === 1 ? block : block / 4;
+  function formatHour(block, days) {
+    const adjusted = days === 1 ? block / 4 : block;
     const hour = Math.floor(adjusted);
     const minutes = Math.round((adjusted % 1) * 60);
     const ampm = hour >= 12 ? "PM" : "AM";

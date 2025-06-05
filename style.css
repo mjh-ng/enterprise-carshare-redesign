@@ -199,3 +199,42 @@ h1 {
   border-radius: var(--radius);
   cursor: pointer;
 }
+
+.timeline-bar {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: var(--blue);
+  border-radius: var(--radius);
+}
+
+.timeline-bar .handle {
+  position: absolute;
+  top: 0;
+  width: 8px;
+  height: 100%;
+  background: var(--dark);
+  cursor: ew-resize;
+}
+
+.timeline-bar .handle.left { left: 0; }
+.timeline-bar .handle.right { right: 0; }
+
+.timeline-labels-top,
+.timeline-labels-bottom {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  font-size: 0.75rem;
+  pointer-events: none;
+}
+
+.timeline-labels-top { top: -1.2rem; }
+.timeline-labels-bottom { bottom: -1.2rem; }
+
+.timeline-labels-top div,
+.timeline-labels-bottom div {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
