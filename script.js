@@ -22,6 +22,17 @@ const mockCars = [
   { name: "Mazda CX-5", date: "2025-06-11", start: 68, end: 92 }
 ];
 
+function toggleProfilePanel() {
+  const panel = document.getElementById("profilePanel");
+  panel.classList.toggle("open");
+}
+
+function closeProfilePanel() {
+  document.getElementById("profilePanel").classList.remove("open");
+}
+
+window.toggleProfilePanel = toggleProfilePanel;
+
 function formatHour(block) {
   const hour = Math.floor(block / 4);
   const minutes = (block % 4) * 15;
@@ -144,4 +155,21 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   rerenderAll();
+
+  const profileBox = document.getElementById("profileBox");
+  const closeBtn = document.getElementById("closeProfilePanel");
+  const panel = document.getElementById("profilePanel");
+
+  profileBox.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleProfilePanel();
+  });
+
+  closeBtn.addEventListener("click", () => closeProfilePanel());
+
+  document.addEventListener("click", (e) => {
+    if (!panel.contains(e.target) && !profileBox.contains(e.target)) {
+      closeProfilePanel();
+    }
+  });
 });
