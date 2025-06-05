@@ -13,7 +13,7 @@ today.setHours(0, 0, 0, 0);
 
 const user = sessionStorage.getItem("fullName");
 if (!user) window.location.href = "/login.html";
-else document.getElementById("profileName").textContent = user;
+else document.getElementById("profileBox").textContent = user;
 
 const mockCars = [
   { name: "Toyota Corolla", date: "2025-06-10", start: 32, end: 56 },

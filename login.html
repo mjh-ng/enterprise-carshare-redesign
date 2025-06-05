@@ -20,7 +20,7 @@
       e.preventDefault();
       const name = document.getElementById('fullName').value.trim();
       if (name) {
-        sessionStorage.setItem('userFullName', name);
+        sessionStorage.setItem('fullName', name);
         window.location.href = '/'; // Redirect to home
       }
     });
