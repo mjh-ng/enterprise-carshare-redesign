@@ -62,6 +62,10 @@ function renderRangeLabel() {
 function renderMonthCalendar(year, month) {
   const grid = document.getElementById("calendarGrid");
   grid.innerHTML = "";
+
+  const preview = document.getElementById("previewNextMonth");
+  preview.innerHTML = "";
+
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDay = new Date(year, month, 1).getDay();
   const todayISO = formatDate(today);
@@ -106,6 +110,17 @@ function renderMonthCalendar(year, month) {
       });
     }
     grid.appendChild(div);
+  }
+
+  const lastIso = formatDate(new Date(year, month, daysInMonth));
+  if (selectedDates.includes(lastIso)) {
+    for (let d = 1; d <= 7; d++) {
+      const date = new Date(year, month + 1, d);
+      const div = document.createElement("div");
+      div.classList.add("grid-date");
+      div.textContent = date.getDate();
+      preview.appendChild(div);
+    }
   }
 
   document.getElementById("monthLabel").textContent = new Date(year, month).toLocaleDateString("default", { month: "long", year: "numeric" });
