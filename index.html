@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enterprise CarShare</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="top-bar">
+    <h1>Enterprise CarShare</h1>
+    <div class="profile-box" id="profileBox">User Name</div>
+  </div>
+
+  <div class="profile-panel" id="profilePanel">
+    <ul>
+      <li><a href="/account.html">My Account</a></li>
+      <li><a href="/messages.html">Messages</a></li>
+      <li><a href="/help.html">Help with a Car</a></li>
+    </ul>
+  </div>
+
+  <div class="main-container">
+    <div class="calendar-controls">
+      <button id="prevMonth">Previous</button>
+      <span id="monthLabel"></span>
+      <button id="nextMonth">Next</button>
+    </div>
+
+    <div id="calendarGrid" class="calendar-grid"></div>
+    <div id="previewNextMonth" class="calendar-grid preview"></div>
+
+    <div id="timeSelector" class="time-selector"></div>
+    <p id="selectedRangeLabel">No date selected.</p>
+
+    <div id="carList" class="car-list"></div>
+  </div>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
