@@ -22,6 +22,32 @@ const mockCars = [
   { name: "Mazda CX-5", date: "2025-06-11", start: 68, end: 92 }
 ];
 
+function renderCars() {
+  const list = document.getElementById("carList");
+  list.innerHTML = "";
+
+  if (selectedDates.length === 0) return;
+
+  const startBlock = selectedDates.length === 1
+    ? selectedTime.start
+    : selectedTime.start * 4;
+  const endBlock = selectedDates.length === 1
+    ? selectedTime.end
+    : selectedTime.end * 4;
+
+  mockCars.forEach(car => {
+    if (!selectedDates.includes(car.date)) return;
+    if (endBlock <= car.start || startBlock >= car.end) return;
+
+    const card = document.createElement("div");
+    let state = "partial";
+    if (startBlock >= car.start && endBlock <= car.end) state = "full";
+    card.classList.add("car-card", state);
+    card.textContent = `${car.name} (${formatHour(car.start)} - ${formatHour(car.end)})`;
+    list.appendChild(card);
+  });
+}
+
 function formatHour(block) {
   const hour = Math.floor(block / 4);
   const minutes = (block % 4) * 15;
