@@ -190,6 +190,25 @@ h1 {
   border-color: red;
 }
 
+.profile-box {
+  cursor: pointer;
+  background: var(--blue);
+  color: #fff;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius);
+}
+
+.close-panel {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
 .profile-panel-toggle {
   position: fixed;
   top: 1rem;
@@ -218,6 +237,7 @@ h1 {
 
 .profile-panel.open {
   transform: translateX(0);
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
 }
 
 .login-screen {
