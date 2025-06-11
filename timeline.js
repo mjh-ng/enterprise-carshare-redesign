@@ -1,153 +1,193 @@
-// timeline.js — draggable time selection bar with labeling logic
-export function renderMasterTimeline(selectedDates, selectedTime, rerenderAll) {
-    const timeSelector = document.getElementById("timeSelector");
-    timeSelector.innerHTML = "";
-    if (!selectedDates || selectedDates.length === 0) return;
-  
-    const totalQuarters = selectedDates.length === 1 ? 96 : 24 * selectedDates.length;
-    const block = document.createElement("div");
-    block.classList.add("timeline-bar");
+const timelineContainer = document.getElementById("main-timeline");
+const timeLabels = document.getElementById("time-labels");
 
-    const startQ = selectedTime.start * (selectedDates.length === 1 ? 4 : 1);
-    const endQ = selectedTime.end * (selectedDates.length === 1 ? 4 : 1);
-    block.style.left = `${(startQ / totalQuarters) * 100}%`;
-    block.style.width = `${((endQ - startQ) / totalQuarters) * 100}%`;
-  
-    const container = document.createElement("div");
-    container.classList.add("timeline");
-    container.style.position = "relative";
-  
-    const leftHandle = document.createElement("div");
-    const rightHandle = document.createElement("div");
-    leftHandle.classList.add("handle", "left");
-    rightHandle.classList.add("handle", "right");
-  
-    block.appendChild(leftHandle);
-    block.appendChild(rightHandle);
-    container.appendChild(block);
-  
-    // Labels ABOVE the bar
-    const topLabelBar = document.createElement("div");
-    topLabelBar.classList.add("timeline-labels-top");
-    if (selectedDates.length === 1) {
-      for (let h = 0; h <= 24; h += 6) {
-        const q = h * 4;
-        const label = document.createElement("div");
-        label.classList.add("label-top");
-        label.style.left = `${(q / totalQuarters) * 100}%`;
-        if (h === 0 || h === 24) label.textContent = "12am";
-        else if (h === 12) label.textContent = "Noon";
-        else label.textContent = `${h % 12}${h < 12 ? 'am' : 'pm'}`;
-        topLabelBar.appendChild(label);
+let timelineStart = null;
+let timelineEnd = null;
+
+let timeStart = null;
+let timeEnd = null;
+
+// Called whenever dates change
+function renderTimeline() {
+  const dates = getSelectedDates();
+  if (!dates.length) {
+    timelineContainer.innerHTML = "";
+    timeLabels.innerHTML = "";
+    return;
+  }
+
+  const sorted = [...dates].sort((a, b) => a - b);
+  timelineStart = new Date(sorted[0]);
+  timelineStart.setHours(0, 0, 0, 0);
+  timelineEnd = new Date(sorted[sorted.length - 1]);
+  timelineEnd.setHours(24, 0, 0, 0);
+
+  const durationMs = timelineEnd - timelineStart;
+  const singleDay = sorted.length === 1;
+  const incrementMs = singleDay ? 15 * 60 * 1000 : 60 * 60 * 1000;
+
+  const totalIncrements = durationMs / incrementMs;
+
+  timelineContainer.innerHTML = "";
+  timeLabels.innerHTML = "";
+
+  const drag = document.createElement("div");
+  drag.className = "drag-bar";
+  const handleL = document.createElement("div");
+  handleL.className = "drag-handle";
+  const handleR = document.createElement("div");
+  handleR.className = "drag-handle";
+
+  drag.appendChild(handleL);
+  drag.appendChild(handleR);
+  timelineContainer.appendChild(drag);
+
+  let dragging = false;
+  let activeHandle = null;
+  let dragStartX = 0;
+  let dragStartLeft = 0;
+  let dragStartRight = 0;
+
+  const width = timelineContainer.offsetWidth;
+
+  // Initial placement
+  let startIndex = Math.floor(totalIncrements / 3);
+  let endIndex = startIndex + Math.max(2, Math.floor(totalIncrements / 6));
+
+  function setBar() {
+    const left = (startIndex / totalIncrements) * width;
+    const right = (endIndex / totalIncrements) * width;
+    drag.style.left = `${left}px`;
+    drag.style.width = `${right - left}px`;
+
+    timeStart = new Date(timelineStart.getTime() + incrementMs * startIndex);
+    timeEnd = new Date(timelineStart.getTime() + incrementMs * endIndex);
+    renderTimeLabels();
+    renderCars();
+  }
+
+  function snapToIncrement(px) {
+    const percent = px / width;
+    return Math.round(percent * totalIncrements);
+  }
+
+  handleL.onmousedown = (e) => {
+    dragging = true;
+    activeHandle = "left";
+    dragStartX = e.clientX;
+    dragStartLeft = startIndex;
+    document.onmousemove = move;
+    document.onmouseup = stop;
+  };
+
+  handleR.onmousedown = (e) => {
+    dragging = true;
+    activeHandle = "right";
+    dragStartX = e.clientX;
+    dragStartRight = endIndex;
+    document.onmousemove = move;
+    document.onmouseup = stop;
+  };
+
+  drag.onmousedown = (e) => {
+    if (e.target === handleL || e.target === handleR) return;
+    dragging = true;
+    activeHandle = "move";
+    dragStartX = e.clientX;
+    dragStartLeft = startIndex;
+    dragStartRight = endIndex;
+    document.onmousemove = move;
+    document.onmouseup = stop;
+  };
+
+  function move(e) {
+    const dx = e.clientX - dragStartX;
+    const delta = snapToIncrement(dx);
+    if (activeHandle === "left") {
+      startIndex = Math.min(dragStartRight - 1, Math.max(0, dragStartLeft + delta));
+    } else if (activeHandle === "right") {
+      endIndex = Math.max(dragStartLeft + 1, Math.min(totalIncrements, dragStartRight + delta));
+    } else if (activeHandle === "move") {
+      const width = dragStartRight - dragStartLeft;
+      let newStart = dragStartLeft + delta;
+      let newEnd = newStart + width;
+      if (newStart < 0) {
+        newStart = 0;
+        newEnd = width;
       }
-    } else {
-      selectedDates.forEach((d, idx) => {
-        const q = idx * 24;
-        const label = document.createElement("div");
-        label.classList.add("label-top");
-        label.style.left = `${(q / totalQuarters) * 100}%`;
-        const dateObj = new Date(d);
-        label.textContent = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-        topLabelBar.appendChild(label);
-      });
+      if (newEnd > totalIncrements) {
+        newEnd = totalIncrements;
+        newStart = endIndex - width;
+      }
+      startIndex = newStart;
+      endIndex = newEnd;
     }
-    container.appendChild(topLabelBar);
-  
-    // Labels BELOW the bar
-    const bottomLabelBar = document.createElement("div");
-    bottomLabelBar.classList.add("timeline-labels-bottom");
-    const startRatio = startQ / totalQuarters;
-    const endRatio = endQ / totalQuarters;
-  
-    const startLabel = document.createElement("div");
-    startLabel.classList.add("label-bottom");
-    startLabel.style.left = `${startRatio * 100}%`;
-    startLabel.textContent = formatHour(selectedTime.start, selectedDates.length);
-  
-    const endLabel = document.createElement("div");
-    endLabel.classList.add("label-bottom");
-    endLabel.style.left = `${endRatio * 100}%`;
-    endLabel.textContent = formatHour(selectedTime.end, selectedDates.length);
-  
-    bottomLabelBar.appendChild(startLabel);
-    bottomLabelBar.appendChild(endLabel);
-    container.appendChild(bottomLabelBar);
-  
-    timeSelector.appendChild(container);
-  
-    let isDragging = false;
-    let dragStartX = 0;
-    let initialLeft = 0;
-    let isResizing = false;
-    let resizeSide = null;
-  
-    block.addEventListener("mousedown", (e) => {
-      if (e.target === leftHandle || e.target === rightHandle) {
-        isResizing = true;
-        resizeSide = e.target === leftHandle ? "left" : "right";
-      } else {
-        isDragging = true;
-        dragStartX = e.clientX;
-        initialLeft = block.offsetLeft;
-      }
-      e.preventDefault();
-    });
-  
-    window.addEventListener("mousemove", (e) => {
-      if (!isDragging && !isResizing) return;
-      const parentWidth = container.offsetWidth;
-      const dx = e.clientX - dragStartX;
-  
-      const increment = parentWidth / totalQuarters;
-      if (isDragging) {
-        let newLeft = initialLeft + dx;
-        newLeft = Math.max(0, Math.min(newLeft, parentWidth - block.offsetWidth));
-        newLeft = Math.round(newLeft / increment) * increment;
-        block.style.left = `${(newLeft / parentWidth) * 100}%`;
-        const newStart = Math.round((newLeft / parentWidth) * totalQuarters);
-        const duration = Math.round((block.offsetWidth / parentWidth) * totalQuarters);
-        selectedTime.start = selectedDates.length === 1 ? newStart / 4 : newStart;
-        selectedTime.end = selectedDates.length === 1 ? (newStart + duration) / 4 : (newStart + duration);
-      } else if (isResizing) {
-        const rect = block.getBoundingClientRect();
-        if (resizeSide === "left") {
-          let newLeft = e.clientX - container.getBoundingClientRect().left;
-          let newWidth = rect.right - e.clientX;
-          if (newLeft >= 0 && newWidth >= 10) {
-            newLeft = Math.round(newLeft / increment) * increment;
-            newWidth = Math.round(newWidth / increment) * increment;
-            block.style.left = `${(newLeft / parentWidth) * 100}%`;
-            block.style.width = `${(newWidth / parentWidth) * 100}%`;
-          }
-        } else {
-          let newWidth = e.clientX - rect.left;
-          if (newWidth >= 10 && rect.left + newWidth <= container.getBoundingClientRect().right) {
-            newWidth = Math.round(newWidth / increment) * increment;
-            block.style.width = `${(newWidth / parentWidth) * 100}%`;
-          }
-        }
-        const leftRatio = parseFloat(block.style.left) / 100;
-        const widthRatio = parseFloat(block.style.width) / 100;
-        const newStart = Math.round(leftRatio * totalQuarters);
-        const newEnd = Math.round((leftRatio + widthRatio) * totalQuarters);
-        selectedTime.start = selectedDates.length === 1 ? newStart / 4 : newStart;
-        selectedTime.end = selectedDates.length === 1 ? newEnd / 4 : newEnd;
-      }
-      rerenderAll();
-    });
-  
-    window.addEventListener("mouseup", () => {
-      isDragging = false;
-      isResizing = false;
-    });
+    setBar();
   }
-  
-  function formatHour(block, days) {
-    const adjusted = days === 1 ? block / 4 : block;
-    const hour = Math.floor(adjusted);
-    const minutes = Math.round((adjusted % 1) * 60);
-    const ampm = hour >= 12 ? "PM" : "AM";
-    const displayHour = hour % 12 === 0 ? 12 : hour % 12;
-    return `${displayHour}:${minutes.toString().padStart(2, "0")} ${ampm}`;
+
+  function stop() {
+    dragging = false;
+    document.onmousemove = null;
+    document.onmouseup = null;
   }
-  
+
+  // Initial render
+  setBar();
+}
+
+// Helper to display time below + date above
+function renderTimeLabels() {
+  timeLabels.innerHTML = "";
+
+  const dates = getSelectedDates();
+  if (!dates.length) return;
+
+  const multi = dates.length > 1;
+  const single = dates.length === 1;
+
+  // Top labels (dates / 12am / noon)
+  const top = document.createElement("div");
+  top.style.width = "100%";
+  top.style.display = "flex";
+  top.style.justifyContent = "space-between";
+  top.style.fontSize = "0.7rem";
+  top.style.marginBottom = "4px";
+
+  const bottom = document.createElement("div");
+  bottom.style.width = "100%";
+  bottom.style.display = "flex";
+  bottom.style.justifyContent = "space-between";
+  bottom.style.fontSize = "0.8rem";
+
+  const startStr = formatTimeLabel(timeStart);
+  const endStr = formatTimeLabel(timeEnd);
+
+  if (single) {
+    top.innerHTML = `<div>12am</div><div>noon</div><div>midnight</div>`;
+  } else {
+    const span = (d) => `${d.toLocaleDateString("en-US", { month: 'short', day: 'numeric' })}`;
+    top.innerHTML = dates.length <= 3
+      ? dates.map(d => `<div>${span(d)}</div>`).join("")
+      : `<div>${span(dates[0])} — ${span(dates[dates.length - 1])}</div>`;
+  }
+
+  bottom.innerHTML = `<div>${startStr}</div><div>${endStr}</div>`;
+
+  timeLabels.appendChild(top);
+  timeLabels.appendChild(bottom);
+}
+
+function formatTimeLabel(date) {
+  return date.toLocaleString("en-US", {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    month: 'short',
+    day: 'numeric'
+  });
+}
+
+// Accessor for external use (e.g. cars.js)
+function getSelectedTimeRange() {
+  return { timeStart, timeEnd };
+}

@@ -1,315 +1,194 @@
-/* style.css — Base styling for Enterprise CarShare */
-
-:root {
-  --bg: #f9f9fb;
-  --gray: #ccc;
-  --light-gray: #e0e0e0;
-  --dark: #333;
-  --blue: #4a90e2;
-  --green: rgba(0, 200, 0, 0.25);
-  --red: rgba(200, 0, 0, 0.25);
-  --radius: 8px;
-  --spacing: 16px;
-  --font: 'Helvetica Neue', sans-serif;
-}
-
+/* GENERAL LAYOUT */
 body {
   margin: 0;
-  font-family: var(--font);
-  background: var(--bg);
-  color: var(--dark);
+  font-family: sans-serif;
+  background: #f8f8f8;
+  color: #333;
+}
+
+.centered {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
 }
 
-.container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: var(--spacing);
+input, button {
+  padding: 10px;
+  margin-top: 10px;
+  font-size: 1rem;
 }
 
-h1 {
-  text-align: center;
-  margin-bottom: 0.5em;
-}
-
-.top-bar {
+header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: var(--spacing);
+  padding: 1rem 2rem;
+  background-color: #eee;
+  border-bottom: 1px solid #ccc;
 }
 
-.profile-box {
-  background: white;
-  border: 1px solid var(--gray);
-  border-radius: var(--radius);
-  padding: 0.25rem 0.75rem;
+#profile-box {
+  background: #111;
+  color: white;
+  padding: 0.5rem 1rem;
   cursor: pointer;
+  border-radius: 4px;
 }
 
-.main-container {
+/* PROFILE PANEL */
+#profile-panel {
+  position: fixed;
+  top: 0;
+  right: -250px;
+  width: 250px;
+  height: 100%;
+  background: #222;
+  color: white;
+  padding: 2rem 1rem;
+  transition: right 0.3s ease;
+  z-index: 100;
+}
+
+#profile-panel.open {
+  right: 0;
+}
+
+#profile-panel ul {
+  list-style: none;
+  padding: 0;
+}
+
+#profile-panel li {
+  margin: 1rem 0;
+}
+
+#profile-panel a {
+  color: white;
+  text-decoration: none;
+}
+
+/* MAIN STRUCTURE */
+main {
   max-width: 1000px;
-  margin: 0 auto;
-  padding: var(--spacing);
+  margin: 2rem auto;
+  padding: 0 2rem;
 }
 
-.calendar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: var(--spacing) 0;
-}
-
-.calendar-grid {
+/* CALENDAR */
+#calendar-container {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-  margin-bottom: var(--spacing);
+  gap: 6px;
+  margin-bottom: 1rem;
 }
 
-.grid-date {
-  padding: 10px;
-  text-align: center;
+.calendar-day {
+  padding: 0.7rem;
   background: white;
-  border: 1px solid var(--gray);
-  border-radius: var(--radius);
+  text-align: center;
+  border: 1px solid #ccc;
   cursor: pointer;
-  user-select: none;
 }
 
-.grid-date.disabled {
-  background: var(--light-gray);
-  color: #888;
-  cursor: not-allowed;
-}
-
-.grid-date.selected {
-  background: var(--blue);
-  color: white;
-  font-weight: bold;
-}
-
-#selectedRangeLabel {
-  text-align: center;
-  font-weight: 500;
-  margin-bottom: var(--spacing);
-}
-
-#timeSelector {
-  margin: 0 auto var(--spacing);
-  position: relative;
-  height: 50px;
-  width: 100%;
-  background: white;
-  border: 1px solid var(--gray);
-  border-radius: var(--radius);
-}
-
-.timeline {
-  position: relative;
-  height: 30px;
+.calendar-day.past {
   background: #ddd;
-  border-radius: var(--radius);
-  margin: var(--spacing) 0;
-}
-
-.timeline-bar {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  background: var(--blue);
-  border-radius: var(--radius);
-}
-
-.timeline-labels-top,
-.timeline-labels-bottom {
-  position: absolute;
-  left: 0;
-  right: 0;
-  font-size: 0.75rem;
+  color: #888;
   pointer-events: none;
 }
 
-.timeline-labels-top {
-  top: -1.5em;
-}
-
-.timeline-labels-bottom {
-  bottom: -1.5em;
-}
-
-.label-top,
-.label-bottom {
-  position: absolute;
-  transform: translateX(-50%);
-  white-space: nowrap;
-}
-
-.timeline .segment {
-  position: absolute;
-  height: 100%;
-  background: var(--light-gray);
-  border-radius: var(--radius);
-}
-
-.timeline .available {
-  background: var(--gray);
-}
-
-.timeline .overlay {
-  background: var(--green);
-  position: absolute;
-  height: 100%;
-  border-radius: var(--radius);
-}
-
-.car-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing);
-  margin-bottom: 3rem;
-}
-
-.car-card {
-  background: white;
-  padding: var(--spacing);
-  border: 1px solid var(--gray);
-  border-radius: var(--radius);
-  transition: all 0.3s;
-}
-
-.car-card.full {
-  border-color: green;
-}
-
-.car-card.partial {
-  border-color: red;
-}
-
-.profile-box {
-  cursor: pointer;
-  background: var(--blue);
-  color: #fff;
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--radius);
-}
-
-.close-panel {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 1.25rem;
-  cursor: pointer;
-}
-
-.profile-panel-toggle {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  background: black;
+.calendar-day.selected {
+  background: #4caf50;
   color: white;
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius);
-  cursor: pointer;
-  z-index: 1000;
 }
 
-.profile-panel {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 300px;
-  height: 100vh;
-  background: #111;
-  color: white;
-  transform: translateX(100%);
-  transition: transform 0.3s ease;
-  padding: var(--spacing);
-  z-index: 999;
+/* TIME SELECTION */
+#main-timeline {
+  position: relative;
+  height: 40px;
+  background: #ccc;
+  margin-bottom: 1rem;
+  border-radius: 4px;
 }
 
-.profile-panel.open {
-  transform: translateX(0);
-  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
-}
-
-.login-screen {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-}
-
-.login-box {
-  background: white;
-  padding: 2rem;
-  border-radius: var(--radius);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  text-align: center;
-}
-
-.login-box input {
-  width: 100%;
-  padding: 0.5rem;
-  margin: 1rem 0;
-  border-radius: var(--radius);
-  border: 1px solid var(--gray);
-}
-
-.login-box button {
-  background: var(--blue);
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius);
-  cursor: pointer;
-}
-
-.timeline-bar {
+.drag-bar {
   position: absolute;
-  top: 0;
   height: 100%;
-  background: var(--blue);
-  border-radius: var(--radius);
+  background: rgba(0, 128, 255, 0.3);
+  border: 2px solid #0080ff;
+  border-radius: 4px;
+  cursor: move;
 }
 
-.timeline-bar .handle {
+.drag-handle {
   position: absolute;
-  top: 0;
-  width: 8px;
+  width: 10px;
   height: 100%;
-  background: var(--dark);
+  background: #0080ff;
   cursor: ew-resize;
 }
 
-.timeline-bar .handle.left { left: 0; }
-.timeline-bar .handle.right { right: 0; }
-
-.timeline-labels-top,
-.timeline-labels-bottom {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  font-size: 0.75rem;
-  pointer-events: none;
+/* TIME LABELS */
+#time-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  margin-top: -10px;
+  margin-bottom: 2rem;
 }
 
-.timeline-labels-top { top: -1.2rem; }
-.timeline-labels-bottom { bottom: -1.2rem; }
+/* CAR LIST */
+#car-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
 
-.timeline-labels-top div,
-.timeline-labels-bottom div {
+.car-box {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 1rem;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.car-box.expanded {
+  background: #f0f0f0;
+}
+
+.car-timeline {
+  margin-top: 1rem;
+  height: 40px;
+  background: #ddd;
+  position: relative;
+  border-radius: 4px;
+}
+
+.car-availability {
   position: absolute;
-  transform: translateX(-50%);
-  white-space: nowrap;
+  top: 0;
+  height: 100%;
+  background: rgba(0,0,0,0.2);
+}
+
+.car-drag-bar {
+  position: absolute;
+  height: 100%;
+  background: rgba(0, 255, 0, 0.3);
+  border: 2px solid green;
+  border-radius: 4px;
+}
+
+.car-drag-bar.partial {
+  background: rgba(255, 0, 0, 0.3);
+  border-color: red;
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  main {
+    padding: 0 1rem;
+  }
 }
